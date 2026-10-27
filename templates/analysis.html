@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>WHOOPS — Feature Ablation</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='Interface_module.css', v='20261012-ratio2') }}">
+  <script src="{{ url_for('static', filename='analysis.js', v='20261012-ratio2') }}" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/">WHOOPS<span>.</span></a>
+      <nav><a href="/">Collector <span aria-hidden="true">↗</span></a></nav>
+    </header>
+
+    <section class="hero compact">
+      <p class="eyebrow">ANALYSIS ENGINE · PANDAS</p>
+      <h1>Feature <span>ablation.</span></h1>
+      <p class="lead">Compare fingerprint uniqueness before and after removing each signal category.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div><p class="eyebrow">DATA SOURCE</p><h2>Choose dataset</h2></div>
+      </div>
+      <div class="source-row">
+        <label for="source">Analyse</label>
+        <select id="source">
+          <option value="sample">Supplied sample dataset</option>
+          <option value="combined">Sample + collected (labelled by origin)</option>
+          <option value="collected">Records collected by this server</option>
+        </select>
+        <button id="refresh" class="primary">Run analysis</button>
+      </div>
+      <p id="source-note" class="muted">The supplied sample may include simulated records. Verify its provenance before using it as real-world evidence.</p>
+      <p id="analysis-status" class="status" role="status" aria-live="polite">Loading analysis…</p>
+    </section>
+
+    <section id="results" hidden>
+      <div class="stats-grid">
+        <article class="stat-card"><span>Records analysed</span><strong id="rows">—</strong></article>
+        <article class="stat-card"><span>Dataset columns</span><strong id="cols">—</strong></article>
+        <article class="stat-card"><span>Original uniqueness</span><strong id="uniqueness">—</strong></article>
+      </div>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">RESULTS</p><h2>Feature contribution ranking</h2></div>
+          <a id="download-results" class="button secondary" href="/analysis/export?source=sample">Download results CSV</a>
+        </div>
+        <p class="muted">Contribution (pp) is original uniqueness minus uniqueness after removing a category. Relative impact is the contribution divided by the largest positive contribution in this dataset. They are different measures.</p>
+        <div id="analysis-diagnostic" class="analysis-diagnostic" role="status" aria-live="polite">Waiting for analysis…</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Rank</th><th>Category removed</th><th>Uniqueness after removal</th><th>Contribution (pp)</th><th>Alone</th><th>Relative impact ratio</th><th>Distinct signatures</th></tr></thead>
+            <tbody id="results-body"></tbody>
+          </table>
+        </div>
+        <p class="muted ratio-legend">A 0.00% ratio means no positive uniqueness contribution was measured for that category. It is not a missing percentage.</p>
+      </section>
+    </section>
+
+    <footer><span>WHOOPS · Feature ablation</span><span>Results are dataset-dependent.</span></footer>
+  </main>
+</body>
+</html>
