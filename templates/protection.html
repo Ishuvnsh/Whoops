@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#171717"><title>WHOOPS — Fingerprint Protection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='Interface_module.css', v='20261012-ratio2') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='protection.css', v='20261101-integrated') }}">
+  <script src="{{ url_for('static', filename='protection.js', v='20261101-integrated') }}" defer></script>
+</head>
+<body>
+<div class="app protection-app">
+  <header class="topbar">
+    <a class="wordmark" href="/" aria-label="WHOOPS home"><span class="brand-loop">◎</span> WHOOPS<span class="reg">®</span></a>
+    <a class="research-label" href="/">← BACK TO WHOOPS <span>↗</span></a>
+  </header>
+  <main class="protection-main">
+    <section class="protection-hero">
+      <p class="eyebrow">WHOOPS · PRIVACY RESEARCH / PROTECTION</p>
+      <h1>Protect your <span>fingerprint.</span></h1>
+      <p class="lead">Apply a signal-minimisation profile to your latest collected WHOOPS record and inspect exactly what changed.</p>
+    </section>
+    <div class="protection-notice" role="note"><strong>Research prototype limitation.</strong> This page transforms the stored research representation only. It does not alter browser APIs or protect unrelated websites. Genuine browser-level protection requires a separately controlled Chromium build or extension.</div>
+
+    <section class="panel protection-panel">
+      <div class="panel-heading"><div><p class="eyebrow">01 / SOURCE RECORD</p><h2>Your latest collected fingerprint</h2></div><button id="reload-latest" class="outline-button" type="button">↻ REFRESH</button></div>
+      <p id="source-status" class="status" role="status" aria-live="polite">Loading your latest collected record…</p>
+      <div id="source-meta" class="source-meta" hidden><span>Original record ID</span><code id="source-id">—</code><span>Collected at</span><code id="source-time">—</code></div>
+      <pre id="source-json" class="technical protection-json" hidden></pre>
+    </section>
+
+    <section class="panel protection-panel">
+      <div class="panel-heading"><div><p class="eyebrow">02 / SELECT POLICY</p><h2>Choose protection profile</h2></div></div>
+      <div class="protection-profiles">
+        <label class="profile-option"><input type="radio" name="profile" value="basic" checked><span><b>Basic Protection</b><small>Compatibility-first. Generalises screen dimensions and language detail.</small></span></label>
+        <label class="profile-option"><input type="radio" name="profile" value="balanced"><span><b>Balanced Protection</b><small>Also suppresses canvas, WebGL, exact timezone and hardware detail where collected.</small></span></label>
+        <label class="profile-option"><input type="radio" name="profile" value="strong"><span><b>Strong Protection</b><small>Also suppresses user-agent and platform details. Some sites may behave differently.</small></span></label>
+      </div>
+      <p id="profile-description" class="muted">Compatibility-first minimisation. Only supported fields that actually change will be marked protected.</p>
+      <button id="apply-protection" class="primary" type="button" disabled>APPLY PROTECTION</button>
+      <p id="apply-status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="protection-results" hidden>
+      <section class="panel protection-panel">
+        <div class="panel-heading"><div><p class="eyebrow">03 / BEFORE & AFTER</p><h2>Signal comparison</h2></div><span id="profile-result" class="result-profile"></span></div>
+        <p class="muted">Green = transformed or suppressed in this research representation. Grey = unchanged. Yellow = partially transformed or unsupported.</p>
+        <div class="comparison-grid">
+          <article class="comparison-card"><h3>Original fingerprint</h3><pre id="original-json" class="technical protection-json"></pre></article>
+          <article class="comparison-card"><h3>Protected representation</h3><pre id="protected-json" class="technical protection-json"></pre></article>
+        </div>
+        <div class="table-wrap"><table class="signal-table"><thead><tr><th>Signal</th><th>Original</th><th>Protected</th><th>Status</th></tr></thead><tbody id="signal-rows"></tbody></table></div>
+      </section>
+
+      <section class="panel protection-panel">
+        <div class="panel-heading"><div><p class="eyebrow">04 / PROTECTION REPORT</p><h2>Processing summary</h2></div></div>
+        <div class="protection-stats">
+          <article><span>Examined</span><strong id="count-examined">—</strong></article>
+          <article><span>Modified</span><strong id="count-modified">—</strong></article>
+          <article><span>Restricted</span><strong id="count-restricted">—</strong></article>
+          <article><span>Unchanged</span><strong id="count-unchanged">—</strong></article><article><span>Unsupported</span><strong id="count-unsupported">—</strong></article>
+        </div>
+        <p><b>Protection record:</b> <code id="protection-id">—</code></p>
+        <p><b>Timestamp:</b> <span id="protection-time">—</span></p>
+        <h3>Policies applied</h3><ul id="policy-list"></ul>
+        <div class="metrics-note"><b>Dataset analysis:</b><p id="metrics-text">—</p><p class="muted">Cohort metrics are descriptive measurements of the local collected dataset. A lower uniqueness value alone does not prove that tracking has been prevented.</p></div>
+        <div class="metrics-note"><b>Existing WHOOPS feature-ablation analysis</b><p id="ablation-note">—</p><p id="ablation-uniqueness"></p>
+          <div class="table-wrap"><table class="signal-table"><thead><tr><th>Feature group</th><th>Original contribution (pp)</th><th>Protected contribution (pp)</th></tr></thead><tbody id="ablation-rows"></tbody></table></div>
+        </div>
+      </section>
+    </section>
+  </main>
+  <footer class="footer"><span>WHOOPS / PRIVACY RESEARCH</span><span class="footer-middle">NOT INVISIBLE. JUST UNOBSERVED.</span><span>EST. 2026 <b>＋</b></span></footer>
+</div>
+</body></html>

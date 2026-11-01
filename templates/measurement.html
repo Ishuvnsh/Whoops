@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>WHOOPS — Measurement</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='Interface_module.css', v='20261012-ratio2') }}">
+  <script src="{{ url_for('static', filename='measurement.js', v='20261031-measure1') }}" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/">WHOOPS<span>.</span></a>
+      <nav><a href="/">Collector <span aria-hidden="true">↗</span></a> &nbsp; <a href="/analysis">Feature ablation <span aria-hidden="true">↗</span></a></nav>
+    </header>
+
+    <section class="hero compact">
+      <p class="eyebrow">MEASUREMENT ENGINE · NUMPY · PANDAS</p>
+      <h1>Fingerprint <span>measurements.</span></h1>
+      <p class="lead">Uniqueness, entropy, collisions, distances, feature contribution, stability and distinguishability — recalculated for whichever datasets you select. Real, synthetic and imported records are always labelled.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div><p class="eyebrow">DATA SOURCE</p><h2>Choose datasets</h2></div>
+      </div>
+      <div class="source-row">
+        <label for="datasets">Datasets</label>
+        <select id="datasets" multiple size="4" aria-describedby="source-note"></select>
+        <label for="origin-filter">Records</label>
+        <select id="origin-filter">
+          <option value="all">All selected records</option>
+          <option value="real">Real records only</option>
+          <option value="synthetic">Synthetic records only</option>
+          <option value="unverified">Unverified origin only</option>
+        </select>
+        <button id="run" class="primary">Run measurement</button>
+      </div>
+      <p id="source-note" class="muted">Hold Ctrl (or Cmd) to combine several datasets. The default is the real data collected by this server. Combining synthetic and real records is allowed, but the result is then labelled as mixed.</p>
+      <p id="measure-status" class="status" role="status" aria-live="polite">Loading datasets…</p>
+    </section>
+
+    <section id="results" hidden>
+      <div id="warnings"></div>
+      <div class="stats-grid">
+        <article class="stat-card"><span>Records measured</span><strong id="m-records">—</strong></article>
+        <article class="stat-card"><span>Uniqueness</span><strong id="m-uniqueness">—</strong></article>
+        <article class="stat-card"><span>Data kind</span><strong id="m-kind">—</strong></article>
+      </div>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">RESULTS</p><h2 id="run-title">Measurement run</h2></div>
+          <div>
+            <a id="download-run" class="button secondary" href="/measurements/export?run_id=latest">Download this run (CSV)</a>
+            <a id="download-all" class="button secondary" href="/measurements/export">Download full history</a>
+          </div>
+        </div>
+        <div class="source-row">
+          <label for="run-picker">Stored runs</label>
+          <select id="run-picker"></select>
+        </div>
+        <p id="run-meta" class="muted"></p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Metric</th><th>Scope</th><th>Value</th><th>Confidence interval</th><th>Status</th><th>Note</th></tr></thead>
+            <tbody id="measure-body"></tbody>
+          </table>
+        </div>
+        <p class="muted ratio-legend">“Insufficient data” and “not applicable” are reported instead of invented numbers. Confidence intervals are descriptive bootstrap intervals; no significance test is performed, so nothing here claims statistical significance.</p>
+      </section>
+    </section>
+
+    <footer><span>WHOOPS · Measurement</span><span>Results are dataset-dependent.</span></footer>
+  </main>
+</body>
+</html>

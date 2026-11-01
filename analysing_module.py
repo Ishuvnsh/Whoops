@@ -17,7 +17,12 @@ CATEGORIES = {
 }
 
 # Columns that describe the record, not the browser. Never part of a fingerprint.
-METADATA_COLUMNS = {"timestamp", "origin"}
+# Identifier and provenance columns were added for the measurement module; they are
+# absent from the original CSVs, so existing results are unchanged.
+IDENTIFIER_COLUMNS = {"record_id", "request_id", "browser_id", "session_id"}
+PROVENANCE_COLUMNS = {"source_dataset", "origin_class"}
+METADATA_COLUMNS = {"timestamp", "origin"} | IDENTIFIER_COLUMNS | PROVENANCE_COLUMNS
+UNCATEGORISED = "Other"  # bucket for future fingerprint columns not listed in CATEGORIES
 # Window-size signals change when the user resizes/rotates the window, so two scans
 # of the SAME browser can differ. They stay in the data but are not used to decide
 # whether a browser is distinguishable (otherwise resizing a window fakes uniqueness).
@@ -239,6 +244,82 @@ def compare_to_reference(collected_path: str | Path, reference_path: str | Path)
             "Result applies only to the reference dataset used."
         ),
     }
+
+def compute_feature_contribution(df: pd.DataFrame, fingerprint_columns: list[str] | None = None,
+                                 normalised: bool = False) -> dict:
+    """Feature contribution = baseline uniqueness - uniqueness after removing a category,
+    in percentage points. Extends the original ablation without changing it:
+
+    * same normalisation, same uniqueness definition, same result keys as `run_analysis`
+      (parity with `run_analysis` is covered by tests/test_measurement.py);
+    * tolerant of missing columns - categories with no present column are skipped;
+    * fingerprint columns not listed in CATEGORIES go into an "Other" category instead of
+      raising, so new datasets with extra signals can be measured without code changes.
+    """
+    df = df.copy()
+    if fingerprint_columns is None:
+        fingerprint_columns = [c for c in df.columns
+                               if c not in METADATA_COLUMNS and c not in VOLATILE_COLUMNS]
+    fingerprint_columns = [c for c in fingerprint_columns if c in df.columns]
+    if not normalised:
+        for col in fingerprint_columns:
+            df[col] = _norm(df[col])
+    if len(df) < 2:
+        raise ValueError(f"At least 2 records are required; found {len(df)}.")
+    if not fingerprint_columns:
+        raise ValueError("The dataset contains no fingerprint columns.")
+
+    categories, skipped = {}, []
+    for category, columns in CATEGORIES.items():
+        present = [c for c in columns if c in fingerprint_columns and c not in VOLATILE_COLUMNS]
+        if present:
+            categories[category] = present
+        else:
+            skipped.append(category)
+    assigned = {c for cols in CATEGORIES.values() for c in cols}
+    uncategorised = [c for c in fingerprint_columns if c not in assigned]
+    if uncategorised:
+        categories[UNCATEGORISED] = uncategorised
+
+    baseline = calculate_uniqueness(df, fingerprint_columns)
+    baseline_unique_rows = int((~df[fingerprint_columns].duplicated(keep=False)).sum())
+    results = []
+    for category, removed in categories.items():
+        remaining = [c for c in fingerprint_columns if c not in removed]
+        reduced = calculate_uniqueness(df, remaining)
+        reduced_rows = int((~df[remaining].duplicated(keep=False)).sum()) if remaining else 0
+        contribution = baseline - reduced
+        results.append({
+            "Category Removed": category,
+            "Columns": list(removed),
+            "Baseline Uniqueness (%)": round(baseline, 2),
+            "Uniqueness After Removal (%)": round(reduced, 2),
+            "Uniqueness Alone (%)": round(calculate_uniqueness(df, removed), 2),
+            "Contribution (percentage points)": round(contribution, 2),
+            "Unique Rows Before": baseline_unique_rows,
+            "Unique Rows After Removal": reduced_rows,
+            "Distinct Category Signatures": int(df[removed].fillna("<missing>").astype(str).drop_duplicates().shape[0]),
+        })
+    best = max((max(0.0, r["Contribution (percentage points)"]) for r in results), default=0.0)
+    for r in results:
+        pos = max(0.0, r["Contribution (percentage points)"])
+        r["Relative Impact Ratio (%)"] = round(pos / best * 100.0, 2) if best > 0 else 0.0
+        r["Interpretation"] = (
+            "Measurable uniqueness reduction when removed" if pos > 0 else
+            "No measured change in this dataset; this is not proof the feature is universally unimportant")
+    results.sort(key=lambda r: r["Contribution (percentage points)"], reverse=True)
+    for rank, r in enumerate(results, start=1):
+        r["Rank"] = rank
+    return {
+        "rows": int(len(df)),
+        "baseline_uniqueness": round(float(baseline), 2),
+        "unique_rows": baseline_unique_rows,
+        "duplicate_rows": int(len(df) - baseline_unique_rows),
+        "skipped_categories": skipped,
+        "uncategorised_columns": uncategorised,
+        "results": results,
+    }
+
 
 if __name__ == "__main__":
     import argparse

@@ -1,0 +1,19 @@
+# Render blueprint. A persistent disk is REQUIRED to keep collected CSVs across deploys/restarts
+# (Render's normal filesystem is wiped on every deploy). Disks need a paid instance type.
+services:
+  - type: web
+    name: whoops
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    # several workers are safe: CSV writes are serialised by a file lock in the data directory
+    startCommand: gunicorn connectin_module:app --workers 2 --threads 4 --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: WHOOPS_DATA_DIR
+        value: /var/data
+    disk:
+      name: whoops-data
+      mountPath: /var/data
+      sizeGB: 1
